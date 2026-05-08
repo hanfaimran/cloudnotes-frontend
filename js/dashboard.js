@@ -11,10 +11,14 @@ let searchTimeout = null;
 let isListView = false;
 
 // ── Init ──
+// ── Init ──
 (async () => {
-  const data = await api.get("/auth/me");
-  if (!data) return;
-  const user = data.user;
+  const token = localStorage.getItem("cn_token");
+  if (!token) { window.location.href = "index.html"; return; }
+
+  const cachedUser = localStorage.getItem("cn_user");
+  const user = cachedUser ? JSON.parse(cachedUser) : null;
+  if (!user) { window.location.href = "index.html"; return; }
 
   document.getElementById("sidebar-username").textContent = user.name;
   document.getElementById("sidebar-email").textContent = user.email;
