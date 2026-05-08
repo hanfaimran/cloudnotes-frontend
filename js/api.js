@@ -1,17 +1,33 @@
 // ── CloudNotes API Helper ──
 
 const api = {
+  getToken() {
+    return localStorage.getItem("cn_token");
+  },
+
+  getHeaders() {
+    return {
+      "Authorization": `Bearer ${this.getToken()}`
+    };
+  },
+
   async get(path) {
-    const res = await fetch(`${API_BASE}${path}`, { credentials: "include" });
-    if (res.status === 401) { window.location.href = "index.html"; return null; }
+    const res = await fetch(`${API_BASE}${path}`, {
+      headers: this.getHeaders()
+    });
+    if (res.status === 401) {
+      localStorage.removeItem("cn_token");
+      localStorage.removeItem("cn_user");
+      window.location.href = "index.html";
+      return null;
+    }
     return res.json();
   },
 
   async post(path, body) {
     const res = await fetch(`${API_BASE}${path}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
+      headers: { ...this.getHeaders(), "Content-Type": "application/json" },
       body: JSON.stringify(body)
     });
     return { ok: res.ok, status: res.status, data: await res.json() };
@@ -20,7 +36,7 @@ const api = {
   async postForm(path, formData) {
     const res = await fetch(`${API_BASE}${path}`, {
       method: "POST",
-      credentials: "include",
+      headers: this.getHeaders(),
       body: formData
     });
     return { ok: res.ok, status: res.status, data: await res.json() };
@@ -29,7 +45,7 @@ const api = {
   async putForm(path, formData) {
     const res = await fetch(`${API_BASE}${path}`, {
       method: "PUT",
-      credentials: "include",
+      headers: this.getHeaders(),
       body: formData
     });
     return { ok: res.ok, status: res.status, data: await res.json() };
@@ -38,7 +54,7 @@ const api = {
   async delete(path) {
     const res = await fetch(`${API_BASE}${path}`, {
       method: "DELETE",
-      credentials: "include"
+      headers: this.getHeaders()
     });
     return { ok: res.ok, data: await res.json() };
   },
@@ -46,7 +62,7 @@ const api = {
   async patch(path) {
     const res = await fetch(`${API_BASE}${path}`, {
       method: "PATCH",
-      credentials: "include"
+      headers: this.getHeaders()
     });
     return { ok: res.ok, data: await res.json() };
   }
