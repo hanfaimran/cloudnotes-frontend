@@ -1,14 +1,17 @@
 // ── CloudNotes Auth ──
 
-// Redirect if already logged in
 (async () => {
   try {
-    const res = await fetch(`${API_BASE}/auth/me`, { credentials: "include" });
-    if (res.ok) window.location.href = "dashboard.html";
+    const token = localStorage.getItem("cn_token");
+    if (token) {
+      const res = await fetch(`${API_BASE}/auth/me`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (res.ok) window.location.href = "dashboard.html";
+    }
   } catch (_) {}
 })();
 
-// Tab switching
 const tabs = document.querySelectorAll(".tab");
 const forms = document.querySelectorAll(".auth-form");
 
@@ -33,7 +36,6 @@ function setLoading(btnId, loading) {
   btn.disabled = loading;
 }
 
-// ── Login ──
 document.getElementById("login-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const errorEl = document.getElementById("login-error");
@@ -47,11 +49,12 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify({ email, password })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Login failed");
+    localStorage.setItem("cn_token", data.token);
+    localStorage.setItem("cn_user", JSON.stringify(data.user));
     window.location.href = "dashboard.html";
   } catch (err) {
     errorEl.textContent = err.message;
@@ -60,7 +63,6 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
   }
 });
 
-// ── Signup ──
 document.getElementById("signup-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const errorEl = document.getElementById("signup-error");
@@ -81,11 +83,12 @@ document.getElementById("signup-form").addEventListener("submit", async (e) => {
     const res = await fetch(`${API_BASE}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify({ name, email, password })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Signup failed");
+    localStorage.setItem("cn_token", data.token);
+    localStorage.setItem("cn_user", JSON.stringify(data.user));
     window.location.href = "dashboard.html";
   } catch (err) {
     errorEl.textContent = err.message;
